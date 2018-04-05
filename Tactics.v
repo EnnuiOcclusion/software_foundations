@@ -430,19 +430,25 @@ Theorem plus_n_n_injective : forall n m,
      n + n = m + m ->
      n = m.
 Proof.
-  intros n m.
-  induction n as [| n'].
-  - intros H.
-    induction m.
+  intros n.
+  induction n.
+  - intros m eq.
+    inversion eq.
+    destruct m.
     + reflexivity.
-    + inversion H.
-  - induction m.
-    + intros H.
-      inversion H.
-    + intros H.
-      simpl in H.
-      rewrite <- plus_n_Sm in H.
-      Abort.
+    + inversion H0.
+  - intros m eq.
+    destruct m.
+    + inversion eq.
+    + apply f_equal.
+      apply IHn.
+      apply S_injective.
+      rewrite plus_n_Sm.
+      rewrite plus_n_Sm.
+      apply S_injective.
+      simpl in eq.
+      apply eq.
+      Qed.
 
 (** [] *)
 
@@ -604,8 +610,8 @@ Proof.
     + reflexivity.
     + inversion eq.
   - intros m eq. destruct m.
-    + inversion H0.
-    + apply IHn in H0. rewrite H0. reflexivity. Qed.
+    + inversion eq.
+    + apply IHn in eq. rewrite eq. reflexivity. Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, advanced (beq_nat_true_informal)  *)
@@ -925,7 +931,13 @@ Theorem combine_split : forall X Y (l : list (X * Y)) l1 l2,
   split l = (l1, l2) ->
   combine l1 l2 = l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X Y l l1 l2.
+  induction l.
+  - intros eq.
+    inversion eq.
+    reflexivity.
+  - intros eq.
+  
 (** [] *)
 
 (** However, [destruct]ing compound expressions requires a bit of
