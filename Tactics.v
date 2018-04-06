@@ -430,15 +430,19 @@ Theorem plus_n_n_injective : forall n m,
      n + n = m + m ->
      n = m.
 Proof.
-  intros n. induction n as [| n'].
-  - induction m as [| m'].
+  intros n m.
+  induction n as [| n'].
+  - intros H.
+    induction m.
     + reflexivity.
+    + inversion H.
+  - induction m.
     + intros H.
       inversion H.
-  - induction m as [| m'].
     + intros H.
-      inversion H.
-    + 
+      simpl in H.
+      rewrite <- plus_n_Sm in H.
+      Abort.
 
 (** [] *)
 
@@ -595,7 +599,13 @@ Proof.
 Theorem beq_nat_true : forall n m,
     beq_nat n m = true -> n = m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n. induction n.
+  - intros m eq. destruct m.
+    + reflexivity.
+    + inversion eq.
+  - intros m eq. destruct m.
+    + inversion H0.
+    + apply IHn in H0. rewrite H0. reflexivity. Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, advanced (beq_nat_true_informal)  *)
@@ -720,7 +730,19 @@ Theorem nth_error_after_last: forall (n : nat) (X : Type) (l : list X),
      length l = n ->
      nth_error l n = None.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n X l eq.
+  generalize dependent n.
+  induction l.
+  - intros n H. simpl. reflexivity.
+  - intros n eq. destruct n.
+    + inversion eq.
+    + inversion eq.
+      simpl.
+      rewrite H0.
+      apply IHl.
+      apply H0.
+      Qed.
+
 (** [] *)
 
 (* ################################################################# *)
