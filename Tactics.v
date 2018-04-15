@@ -931,13 +931,43 @@ Theorem combine_split : forall X Y (l : list (X * Y)) l1 l2,
   split l = (l1, l2) ->
   combine l1 l2 = l.
 Proof.
-  intros X Y l l1 l2.
-  induction l.
-  - intros eq.
-    inversion eq.
-    reflexivity.
-  - intros eq.
-  
+  intros X Y l l0 l1.
+  symmetry.
+  induction l0.
+  - induction l1.
+    + simpl.
+      destruct l.
+      * reflexivity.
+      * simpl in H.
+        destruct p.
+        destruct (split l).
+        inversion H.
+    + simpl.
+      destruct l.
+      * reflexivity.
+      * simpl in H.
+        destruct p.
+        destruct (split l).
+        inversion H.
+  - simpl.
+    induction l1.
+    + destruct l.
+      * reflexivity.
+      * simpl in H.
+        destruct p.
+        destruct (split l).
+        inversion H.
+    + destruct l.
+      * simpl in H.
+        inversion H.
+      * destruct (p :: l).
+        {
+          simpl in H.
+          inversion H.
+        }
+        Abort.
+        
+ 
 (** [] *)
 
 (** However, [destruct]ing compound expressions requires a bit of
@@ -967,7 +997,7 @@ Abort.
 
 (** We get stuck at this point because the context does not
     contain enough information to prove the goal!  The problem is that
-    the substitution performed by [destruct] is too brutal -- it threw
+    the substitution performed by [destruct] is too brutal -- it thre w
     away every occurrence of [beq_nat n 3], but we need to keep some
     memory of this expression and how it was destructed, because we
     need to be able to reason that, since [beq_nat n 3 = true] in this
@@ -984,7 +1014,8 @@ Theorem sillyfun1_odd : forall (n : nat),
      sillyfun1 n = true ->
      oddb n = true.
 Proof.
-  intros n eq. unfold sillyfun1 in eq.
+  intros n eq.
+ unfold sillyfun1 in eq.
   destruct (beq_nat n 3) eqn:Heqe3.
   (* Now we have the same state as at the point where we got
      stuck above, except that the context contains an extra
@@ -1008,7 +1039,29 @@ Theorem bool_fn_applied_thrice :
   forall (f : bool -> bool) (b : bool),
   f (f (f b)) = f b.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros f b.
+  destruct b.
+  - destruct (f true) eqn:fIsTrue.
+    + rewrite fIsTrue.
+      rewrite fIsTrue.
+      reflexivity.
+    + destruct (f false) eqn:fIsFalse.  
+      * rewrite fIsTrue.
+        reflexivity.
+      * rewrite fIsFalse.
+        reflexivity.
+  - destruct (f false) eqn:fIsFalse.
+    destruct (f true) eqn:fIsTrue.
+    + rewrite fIsTrue.
+      reflexivity.
+    + rewrite fIsFalse.
+      reflexivity.
+    + rewrite fIsFalse.
+      rewrite fIsFalse.
+      reflexivity.
+Qed.
+
+    
 (** [] *)
 
 (* ################################################################# *)
@@ -1081,7 +1134,20 @@ Proof.
 Theorem beq_nat_sym : forall (n m : nat),
   beq_nat n m = beq_nat m n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n.
+  induction n.
+  - simpl.
+    destruct m.
+    + reflexivity.
+    + reflexivity.
+  - simpl.
+    destruct m.
+    + reflexivity.
+    + simpl.
+      rewrite IHn.
+      reflexivity.
+      Qed.
+
 (** [] *)
 
 (** **** Exercise: 3 stars, advanced, optional (beq_nat_sym_informal)  *)
@@ -1101,7 +1167,11 @@ Theorem beq_nat_trans : forall n m p,
   beq_nat m p = true ->
   beq_nat n p = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m p h1 h2.
+  rewrite (beq_nat_true n m h1).
+  apply h2.
+  Qed.
+
 (** [] *)
 
 (** **** Exercise: 3 stars, advanced (split_combine)  *)
