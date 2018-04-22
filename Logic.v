@@ -156,7 +156,21 @@ Qed.
 Example and_exercise :
   forall n m : nat, n + m = 0 -> n = 0 /\ m = 0.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m H.
+  split.
+  generalize dependent m.
+  - induction n.
+    + reflexivity.
+    + intros m H.
+      inversion H.
+  - generalize dependent n.
+    induction m.
+    + reflexivity.
+    + intros n H.
+      rewrite plus_comm in H.
+      inversion H.
+      Qed.
+
 (** [] *)
 
 (** So much for proving conjunctive statements.  To go in the other

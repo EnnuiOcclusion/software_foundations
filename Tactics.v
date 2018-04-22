@@ -1171,12 +1171,46 @@ Definition split_combine_statement : Prop
   (* ("[: Prop]" means that we are giving a name to a
      logical proposition here.) *)
   := forall (X Y : Type) (l : list (X * Y)) (l1 : list X) (l2 : list Y),
-    combine l1 l2 = l -> split l = (l1, l2).
+    combine l1 l2 = l ->
+    length l1 = length l2 ->
+    split l = (l1, l2).
 Theorem split_combine : split_combine_statement.
 Proof.
   intros X Y l.
   induction l.
-  - intros l1 l2 H.
+  - intros [] [].
+    + simpl.
+      reflexivity.
+    + simpl.
+      intros H G.
+      inversion G.
+    + simpl.
+      intros H G.
+      inversion G.
+    + simpl.
+      intros H G.
+      inversion H.
+  - intros [] [].
+    + simpl.
+      intros H G.
+      inversion H.
+    + simpl.
+      intros H G.
+      inversion G.
+    + simpl.
+      intros H G.
+      inversion H.
+    + simpl.
+      intros H G.
+      destruct x.
+      destruct (split l).
+      inversion H.
+      inversion G.
+      apply IHl in H3.
+      * inversion H3.
+        reflexivity.
+      * apply H4.
+        Qed.
 
 
 (** [] *)
@@ -1276,6 +1310,7 @@ Proof. simpl. reflexivity. Qed.
 
 Example existsbTest4 : existsb evenb [] = false.
 Proof. simpl. reflexivity. Qed.
+
 
 Definition existsb' {X : Type} (pred : X -> bool) (l : list X) : bool :=
   negb (forallb (fun x => negb (pred x)) l).
