@@ -931,42 +931,22 @@ Theorem combine_split : forall X Y (l : list (X * Y)) l1 l2,
   split l = (l1, l2) ->
   combine l1 l2 = l.
 Proof.
-  intros X Y l l0 l1.
-  symmetry.
-  induction l0.
-  - induction l1.
-    + simpl.
-      destruct l.
-      * reflexivity.
-      * simpl in H.
-        destruct p.
-        destruct (split l).
-        inversion H.
-    + simpl.
-      destruct l.
-      * reflexivity.
-      * simpl in H.
-        destruct p.
-        destruct (split l).
-        inversion H.
-  - simpl.
-    induction l1.
-    + destruct l.
-      * reflexivity.
-      * simpl in H.
-        destruct p.
-        destruct (split l).
-        inversion H.
-    + destruct l.
-      * simpl in H.
-        inversion H.
-      * destruct (p :: l).
-        {
-          simpl in H.
-          inversion H.
-        }
-        Abort.
-        
+  intros X Y.
+  induction l.
+  - intros l1 l2 h.
+    + inversion h.
+      reflexivity.
+  - intros l1 l2 h.
+    inversion h.
+    destruct x.
+    destruct (split l).
+    inversion H0.
+    simpl.
+    rewrite IHl.
+    + reflexivity.
+    + reflexivity.
+Qed.
+       
  
 (** [] *)
 
@@ -1190,11 +1170,14 @@ Proof.
 Definition split_combine_statement : Prop
   (* ("[: Prop]" means that we are giving a name to a
      logical proposition here.) *)
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
-
+  := forall (X Y : Type) (l : list (X * Y)) (l1 : list X) (l2 : list Y),
+    combine l1 l2 = l -> split l = (l1, l2).
 Theorem split_combine : split_combine_statement.
 Proof.
-(* FILL IN HERE *) Admitted.
+  intros X Y l.
+  induction l.
+  - intros l1 l2 H.
+
 
 (** [] *)
 
@@ -1207,7 +1190,16 @@ Theorem filter_exercise : forall (X : Type) (test : X -> bool)
      filter test l = x :: lf ->
      test x = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X test x.
+  induction l as [| x' l' IHl].
+  - intros lf H.
+    inversion H.
+  - intros lf H.
+    inversion H.
+    destruct (test x').
+    rewrite <- H in H1.
+    Abort.
+
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced, recommended (forall_exists_challenge)  *) 
@@ -1240,7 +1232,84 @@ Proof.
     Finally, prove a theorem [existsb_existsb'] stating that
     [existsb'] and [existsb] have the same behavior. *)
 
-(* FILL IN HERE *)
+Fixpoint forallb {X : Type} (pred : X -> bool) (l : list X) : bool :=
+  match l with
+  | nil => true
+  | h :: t => match (pred h) with
+             | true => forallb pred t
+             | false => false
+             end
+  end.
+
+
+Example forallTest1 : forallb oddb [1;3;5;7;9] = true.
+Proof. simpl. reflexivity. Qed.
+
+Example forallTest2 : forallb negb [false;false] = true.
+Proof. simpl. reflexivity. Qed.
+
+
+Example forallTest3 : forallb evenb [0;2;4;5] = false.
+Proof. simpl. reflexivity. Qed.
+
+
+Example forallTest4 : forallb (beq_nat 5) [] = true.
+Proof. simpl. reflexivity. Qed.
+
+Fixpoint existsb {X : Type} (pred : X -> bool) (l : list X) : bool :=
+  match l with
+  | nil => false
+  | h :: t => match (pred h) with
+             | true => true
+             | false => existsb pred t
+             end
+  end.
+
+Example existsbTest1 : existsb (beq_nat 5) [0;2;3;6] = false.
+Proof. simpl. reflexivity. Qed.
+
+Example existsbTest2 : existsb (andb true) [true;true;false] = true.
+Proof. simpl. reflexivity. Qed.
+
+Example existsbTest3 : existsb oddb [1;0;0;0;0;3] = true.
+Proof. simpl. reflexivity. Qed.
+
+Example existsbTest4 : existsb evenb [] = false.
+Proof. simpl. reflexivity. Qed.
+
+Definition existsb' {X : Type} (pred : X -> bool) (l : list X) : bool :=
+  negb (forallb (fun x => negb (pred x)) l).
+
+Example existsb'Test1 : existsb' (beq_nat 5) [0;2;3;6] = false.
+Proof. simpl. reflexivity. Qed.
+
+Example existsb'Test2 : existsb' (andb true) [true;true;false] = true.
+Proof. simpl. reflexivity. Qed.
+
+Example existsb'Test3 : existsb' oddb [1;0;0;0;0;3] = true.
+Proof. simpl. reflexivity. Qed.
+
+Example existsb'Test4 : existsb' evenb [] = false.
+Proof. simpl. reflexivity. Qed.
+
+Theorem existsb_existsb' : forall {X : Type} (pred : X -> bool) (l : list X),
+    existsb pred l = existsb' pred l.
+Proof.
+  intros X pred l.
+  induction l.
+  - unfold existsb'.
+    simpl.
+    reflexivity.
+  - unfold existsb'.
+    simpl.
+    destruct (pred x).
+    + simpl.
+      reflexivity.
+    + simpl.
+      apply IHl.
+      Qed.
+
+
 (** [] *)
 
 (** $Date: 2018-01-13 16:44:48 -0500 (Sat, 13 Jan 2018) $ *)
